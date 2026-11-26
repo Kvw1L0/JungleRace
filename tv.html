@@ -7,32 +7,32 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        :root { --crimson: #8B0016; --crimson-bright: #C8102E; --gold: #D4AF37; --gold-bright: #FFD166; --dark-bg: #0A0608; }
-        body { background: var(--dark-bg); color: #FAF5EE; font-family: 'Arial Black', sans-serif; margin: 0; overflow: hidden; transition: filter 1s ease-out; }
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Montserrat:wght@500;700;800&display=swap');
+        :root { --crimson: #8B0016; --crimson-bright: #C8102E; --gold: #D4AF37; --gold-bright: #FFD166; --dark-bg: #0A0608; --font-display: 'Cinzel', serif; --font-ui: 'Montserrat', sans-serif; }
+        body { background: var(--dark-bg); color: #FAF5EE; font-family: var(--font-ui); margin: 0; overflow: hidden; transition: filter 1s ease-out; }
         
         #pista-container { width: 100vw; height: 100vh; position: relative; background: url('pista.png') center center / cover no-repeat; background-color: #120608; transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1), filter 2s; will-change: transform; }
         .pista-oscura { filter: brightness(0.2); } 
 
         #zona-carriles { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
-        .carril { position: absolute; width: 100%; height: 14vh; display: flex; align-items: center; transform: translateY(-50%); }
+        .carril { position: absolute; width: 100%; height: 13vh; display: flex; align-items: flex-end; transform: translateY(-100%); }
         
-        .personaje { position: absolute; height: 100%; display: flex; align-items: center; justify-content: center; transform: translateX(-50%); transition: left 0.4s linear, filter 1s; z-index: 10; filter: drop-shadow(0 0 12px rgba(255, 209, 102, 0.45)); }
+        .personaje { position: absolute; height: 100%; display: flex; align-items: flex-end; justify-content: center; transform: translateX(-50%); transition: left 0.4s linear, filter 1s; z-index: 10; filter: drop-shadow(0 0 12px rgba(255, 209, 102, 0.45)); }
         .personaje.meta-cruzada { animation: auraMeta 1.4s ease-in-out infinite alternate; }
         @keyframes auraMeta {
             from { filter: drop-shadow(0 0 8px rgba(255, 215, 100, 0.85)) drop-shadow(0 0 16px rgba(255, 255, 255, 0.55)); }
             to { filter: drop-shadow(0 0 14px rgba(255, 230, 130, 1)) drop-shadow(0 0 28px rgba(255, 255, 255, 0.85)); }
         }
-        .personaje img { display: block; height: auto; max-height: 16.6vh; width: auto; object-fit: contain; }
+        .personaje img { display: block; height: auto; max-height: 13vh; width: auto; object-fit: contain; }
         
         .linea-meta { position: absolute; left: 85vw; top: 57vh; bottom: 3vh; width: 4px; background: rgba(255, 209, 102, 0.8); box-shadow: 0 0 16px var(--gold-bright), 0 0 32px var(--crimson-bright); z-index: 1; filter: blur(0.5px); } 
         
         .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(10, 4, 6, 0.9); display:none; flex-direction:column; justify-content:center; align-items:center; z-index:100; text-align: center; backdrop-filter: blur(5px); }
         
         #pantalla-desbloqueo { display: flex; z-index: 1000; cursor: pointer; }
-        #pantalla-desbloqueo h1 { font-family: 'Press Start 2P', cursive; color: var(--gold-bright); text-shadow: 0 0 25px var(--crimson-bright); animation: pulso 1s infinite alternate; }
+        #pantalla-desbloqueo h1 { font-family: var(--font-display); font-weight: 700; letter-spacing: 3px; color: var(--gold-bright); text-shadow: 0 0 25px var(--crimson-bright); animation: pulso 1s infinite alternate; }
         
-        #titulo-inicio { font-size: 5.5vh; font-family: 'Press Start 2P', cursive; color: var(--gold-bright); text-shadow: 0 0 20px var(--crimson-bright); position: absolute; top: 8vh; width: 100%; text-align: center; margin: 0; z-index: 101;}
+        #titulo-inicio { font-size: 6vh; font-family: var(--font-display); font-weight: 900; letter-spacing: 6px; color: var(--gold-bright); text-shadow: 0 0 20px var(--crimson-bright); position: absolute; top: 8vh; width: 100%; text-align: center; margin: 0; z-index: 101;}
         
         /* --- ESTÉTICA GLASSMORPHISM VARIETÉ --- */
         #caja-qr-central { 
@@ -54,7 +54,7 @@
             align-items: center; 
             z-index: 101; 
         }
-        #pin-display { font-size: 7vh; font-family: 'Press Start 2P', cursive; color: var(--gold-bright); text-shadow: 0 0 20px rgba(255, 209, 102, 0.7); margin-bottom: 20px;}
+        #pin-display { font-size: 8.5vh; font-family: var(--font-display); font-weight: 900; letter-spacing: 8px; color: var(--gold-bright); text-shadow: 0 0 20px rgba(255, 209, 102, 0.7); margin-bottom: 18px;}
         
         .marco-qr {
             background: #FAF5EE;
@@ -75,31 +75,30 @@
         /* --------------------------------------- */
 
         #nubes-nombres { position: absolute; top:0; left:0; width: 100vw; height: 100vh; overflow: hidden; z-index: 100;}
-        .nombre-flotante { position: absolute; font-family: 'Press Start 2P', cursive; text-shadow: 2px 2px 0 #000, 0 0 10px rgba(212, 175, 55, 0.35); white-space: nowrap; animation: flotar 5s infinite ease-in-out alternate;}
+        .nombre-flotante { position: absolute; font-family: var(--font-display); font-weight: 700; letter-spacing: 2px; text-shadow: 2px 2px 0 #000, 0 0 10px rgba(212, 175, 55, 0.35); white-space: nowrap; animation: flotar 5s infinite ease-in-out alternate;}
         @keyframes flotar { 0% { transform: translate(0, 0) scale(1); opacity: 0.65;} 50% { transform: translate(25px, -15px) scale(1.1); opacity: 1;} 100% { transform: translate(-15px, 20px) scale(1); opacity: 0.65;} }
 
-        #contador-tv { font-size: 40vh; font-family: 'Press Start 2P', cursive; color: var(--gold-bright); text-shadow: 0 0 50px var(--crimson-bright); display: none; z-index: 105; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);}
+        #contador-tv { font-size: 40vh; font-family: var(--font-display); font-weight: 900; color: var(--gold-bright); text-shadow: 0 0 50px var(--crimson-bright); display: none; z-index: 105; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);}
         
         #spotlight-ganador { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(255, 209, 102, 0.25) 0%, rgba(139, 0, 22, 0.5) 35%, transparent 65%); display: none; z-index: 50; flex-direction: column; justify-content: center; align-items: center;}
-        #sprite-ganador-gigante img { image-rendering: pixelated; }
-        #txt-ganador-epico { font-family: 'Press Start 2P', cursive; font-size: 5vh; color: var(--gold-bright); text-shadow: 0 0 30px var(--crimson-bright), 0 0 60px var(--crimson); margin-top: 5vh; text-align: center; line-height: 1.5; animation: rebote 1s ease-out;}
+        #txt-ganador-epico { font-family: var(--font-display); font-weight: 900; letter-spacing: 3px; font-size: 5.5vh; color: var(--gold-bright); text-shadow: 0 0 30px var(--crimson-bright), 0 0 60px var(--crimson); margin-top: 5vh; text-align: center; line-height: 1.4; animation: rebote 1s ease-out;}
         @keyframes rebote { 0% { transform: translateY(100px); opacity: 0;} 50% { transform: translateY(-20px); opacity: 1;} 100% { transform: translateY(0); opacity: 1;} }
 
         #panel-ranking { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 65vw; max-width: 900px; background: rgba(14, 5, 8, 0.94); border: 2px solid var(--gold); box-shadow: 0 0 35px rgba(139, 0, 22, 0.7); border-radius: 15px; display: none; flex-direction: column; padding: 40px; z-index: 60; backdrop-filter: blur(10px);}
-        #panel-ranking h2 { font-family: 'Press Start 2P', cursive; font-size: 4vh; color: var(--gold-bright); text-align: center; margin-bottom: 35px; text-shadow: 0 0 12px var(--crimson-bright);}
-        .fila-ranking { display: flex; align-items: center; justify-content: space-between; font-family: 'Press Start 2P', cursive; font-size: 2.5vh; color: #FAF5EE; margin-bottom: 22px; border-bottom: 1px dashed #4A1C24; padding-bottom: 15px;}
-        .fila-primero { color: var(--gold-bright); font-size: 3.3vh; text-shadow: 0 0 12px var(--gold); border-bottom: 2px solid var(--gold);} 
+        #panel-ranking h2 { font-family: var(--font-display); font-weight: 900; letter-spacing: 5px; font-size: 4.5vh; color: var(--gold-bright); text-align: center; margin-bottom: 35px; text-shadow: 0 0 12px var(--crimson-bright);}
+        .fila-ranking { display: flex; align-items: center; justify-content: space-between; font-family: var(--font-ui); font-weight: 800; letter-spacing: 1px; font-size: 2.8vh; color: #FAF5EE; margin-bottom: 22px; border-bottom: 1px dashed #4A1C24; padding-bottom: 15px;}
+        .fila-primero { font-family: var(--font-display); color: var(--gold-bright); font-size: 3.8vh; text-shadow: 0 0 12px var(--gold); border-bottom: 2px solid var(--gold);} 
         @keyframes aparecer { from { opacity: 0; transform: translate(-50%, -40%); } to { opacity: 1; transform: translate(-50%, -50%); } }
         
         #overlay-ruleta { background: rgba(14, 5, 8, 0.8); backdrop-filter: blur(8px); z-index: 105; border: 2px solid rgba(212, 175, 55, 0.5); }
-        #titulo-ruleta { color: var(--gold-bright); font-size: 3.8vh; font-family: 'Press Start 2P', cursive; margin-bottom: 40px; text-shadow: 0 0 15px #000; }
-        #nombre-ruleta { font-size: clamp(24px, 6vw, 8vh); font-family: 'Press Start 2P', cursive; color: #FAF5EE; text-transform: uppercase; text-shadow: 0 0 20px rgba(255, 209, 102, 0.5), 2px 2px 10px #000; transition: all 0.1s ease; white-space: normal; word-break: break-word; max-width: 90vw; line-height: 1.4; }
+        #titulo-ruleta { color: var(--gold-bright); font-size: 4vh; font-family: var(--font-display); font-weight: 700; letter-spacing: 3px; margin-bottom: 40px; text-shadow: 0 0 15px #000; }
+        #nombre-ruleta { font-size: clamp(28px, 6.5vw, 9vh); font-family: var(--font-display); font-weight: 900; letter-spacing: 4px; color: #FAF5EE; text-transform: uppercase; text-shadow: 0 0 20px rgba(255, 209, 102, 0.5), 2px 2px 10px #000; transition: all 0.1s ease; white-space: normal; word-break: break-word; max-width: 90vw; line-height: 1.3; }
         .ruleta-girando { opacity: 0.8; transform: scale(0.98); }
         .ruleta-ganador { color: var(--gold-bright) !important; text-shadow: 0 0 40px var(--crimson-bright), 0 0 80px var(--gold) !important; animation: impactoGanador 0.5s ease-out forwards; }
         @keyframes impactoGanador { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1.05); } }
         
         #pantalla-limpia { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0A0608; z-index: 999; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-sizing: border-box;}
-        #pantalla-limpia h2 { font-family: 'Press Start 2P', cursive; color: var(--gold); font-size: 2.2vh; line-height: 1.6;}
+        #pantalla-limpia h2 { font-family: var(--font-display); font-weight: 700; letter-spacing: 3px; color: var(--gold); font-size: 2.6vh; line-height: 1.6;}
         #overlay-inicio { background: rgba(10, 4, 6, 0.88); backdrop-filter: blur(5px); }
     </style>
 </head>
@@ -133,7 +132,7 @@
         <div id="nubes-nombres"></div>
         
         <div id="caja-qr-central">
-            <span style="font-family: 'Arial Black'; font-size: 2vh; color: #ccc; margin-bottom: 10px; letter-spacing: 2px;">PIN DE ACCESO</span>
+            <span style="font-family: var(--font-ui); font-weight: 700; font-size: 2vh; color: #d7c4c7; margin-bottom: 10px; letter-spacing: 3px;">PIN DE ACCESO</span>
             <div id="pin-display">----</div>
             <div class="marco-qr" id="qr-dinamico">
                 <img src="qr.png" alt="Código QR">
@@ -158,10 +157,10 @@
         const db = getDatabase(app);
         
         const EQUIPOS = [
-            { id: 1, nombre: "FORZUDO", asset: "forzudo.png", posicionY: "66%", inicioX: 12, finX: 91, escala: 1.0 },
-            { id: 2, nombre: "MAGO", asset: "mago.png", posicionY: "72%", inicioX: 12, finX: 91, escala: 1.0 },
-            { id: 3, nombre: "PAYASO", asset: "payaso.png", posicionY: "79%", inicioX: 12, finX: 91, escala: 1.2 },
-            { id: 4, nombre: "SR. CORALES", asset: "corales.png", posicionY: "88%", inicioX: 12, finX: 91, escala: 1.15 }
+            { id: 1, nombre: "FORZUDO", asset: "forzudo.png", posicionY: "68%", inicioX: 12, finX: 91, escala: 0.85 },
+            { id: 2, nombre: "MAGO", asset: "mago.png", posicionY: "74%", inicioX: 12, finX: 91, escala: 0.95 },
+            { id: 3, nombre: "PAYASO", asset: "payaso.png", posicionY: "82%", inicioX: 12, finX: 91, escala: 1.05 },
+            { id: 4, nombre: "SR. CORALES", asset: "corales.png", posicionY: "92%", inicioX: 12, finX: 91, escala: 1.15 }
         ];
         const COLORES_ESTETICOS = ['#FAF5EE', '#FFD166', '#D4AF37', '#C8102E']; 
 
@@ -217,7 +216,7 @@
         EQUIPOS.forEach((eq) => {
             const carril = document.createElement('div');
             carril.className = 'carril'; carril.style.top = eq.posicionY; 
-            carril.innerHTML = `<div class="personaje" id="p-${eq.id}" style="left: ${eq.inicioX}vw;"><img src="${eq.asset}" alt="${eq.nombre}" style="transform: scale(${eq.escala}); transform-origin: center center;"></div>`;
+            carril.innerHTML = `<div class="personaje" id="p-${eq.id}" style="left: ${eq.inicioX}vw;"><img src="${eq.asset}" alt="${eq.nombre}" style="transform: scale(${eq.escala}); transform-origin: bottom center;"></div>`;
             zonaCarriles.appendChild(carril);
             anteriorClicks[eq.id] = 0; posiciones[eq.id] = 0; 
         });
@@ -462,7 +461,7 @@
                     const tiempo = tiemposFinales[id] ? tiemposFinales[id] + "s" : "--";
                     const claseCss = (idx === 0) ? 'fila-ranking fila-primero' : 'fila-ranking';
                     
-                    lista.innerHTML += `<div class="${claseCss}"><span style="width: 10%;">#${idx+1}</span> <span style="flex-grow: 1; text-align: left; padding-left: 20px;">${nom}</span> <span style="color: #aaa; font-family: 'Arial Black'; font-size: 0.8em;">${tiempo}</span></div>`;
+                    lista.innerHTML += `<div class="${claseCss}"><span style="width: 10%;">#${idx+1}</span> <span style="flex-grow: 1; text-align: left; padding-left: 20px;">${nom}</span> <span style="color: #d7c4c7; font-family: var(--font-ui); font-weight: 700; font-size: 0.8em;">${tiempo}</span></div>`;
                 });
                 
                 panel.style.display = 'flex';
