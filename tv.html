@@ -17,7 +17,7 @@
         #zona-carriles { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
         .carril { position: absolute; width: 100%; height: 16.25vh; display: flex; align-items: flex-end; transform: translateY(-100%); }
         
-        .personaje { position: absolute; height: 100%; display: flex; align-items: flex-end; justify-content: center; transform: translateX(-50%); transition: left 0.4s linear, filter 1s; z-index: 10; filter: drop-shadow(0 0 12px rgba(255, 209, 102, 0.45)); }
+        .personaje { position: absolute; left: 0; height: 100%; display: flex; align-items: flex-end; justify-content: center; will-change: transform; transition: filter 0.6s ease; z-index: 10; filter: drop-shadow(0 0 12px rgba(255, 209, 102, 0.45)); }
         .personaje.meta-cruzada { animation: auraMeta 1.4s ease-in-out infinite alternate; }
         @keyframes auraMeta {
             from { filter: drop-shadow(0 0 8px rgba(255, 215, 100, 0.85)) drop-shadow(0 0 16px rgba(255, 255, 255, 0.55)); }
@@ -25,7 +25,7 @@
         }
         .personaje img { display: block; height: auto; max-height: 16.25vh; width: auto; object-fit: contain; }
         
-        .linea-meta { position: absolute; left: 85vw; top: 57vh; bottom: 3vh; width: 4px; background: rgba(255, 209, 102, 0.8); box-shadow: 0 0 16px var(--gold-bright), 0 0 32px var(--crimson-bright); z-index: 1; filter: blur(0.5px); } 
+        .linea-meta { position: absolute; left: 87vw; top: 57vh; bottom: 3vh; width: 4px; background: rgba(255, 209, 102, 0.85); box-shadow: 0 0 16px var(--gold-bright), 0 0 32px var(--crimson-bright); z-index: 1; filter: blur(0.5px); } 
         
         .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(10, 4, 6, 0.9); display:none; flex-direction:column; justify-content:center; align-items:center; z-index:100; text-align: center; backdrop-filter: blur(5px); }
         
@@ -164,7 +164,7 @@
         ];
         const COLORES_ESTETICOS = ['#FAF5EE', '#FFD166', '#D4AF37', '#C8102E']; 
 
-        let datosEq = {}, anteriorClicks = {}, posiciones = {};
+        let datosEq = {}, anteriorClicks = {}, posiciones = {}, visualPos = {};
         let snapshotJugadores = {}; 
         let juegoActivo = false, clasificacion = [];
         let tiempoInicio = 0, tiemposFinales = {}; 
@@ -172,6 +172,23 @@
 
         let volGlobal = 0.7; 
         const audioDrumroll = new Audio('canciones/drumroll.mp3'); audioDrumroll.volume = volGlobal;
+        let tvAudioCtx = null;
+        function getTvAudioCtx() {
+            if (!tvAudioCtx) {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (AC) tvAudioCtx = new AC();
+            }
+            if (tvAudioCtx && tvAudioCtx.state === 'suspended') tvAudioCtx.resume().catch(()=>{});
+            return tvAudioCtx;
+        }
+        function aplicarPosicionVisual(id, posVal) {
+            const eq = EQUIPOS.find(e => e.id === id);
+            const el = document.getElementById(`p-${id}`);
+            if (!eq || !el) return;
+            const progreso = Math.min(Math.max(posVal / 1000, 0), 1);
+            const visualLeft = eq.inicioX + (progreso * (LIMITE_META - eq.inicioX));
+            el.style.transform = `translate3d(calc(${visualLeft}vw - 50%), 0, 0)`;
+        }
 
         function lanzarConfeti() {
             var duration = 5 * 1000;
@@ -209,6 +226,7 @@
         window.desbloquearSistema = () => {
             document.getElementById('pantalla-desbloqueo').style.display = 'none';
             document.getElementById('overlay-inicio').style.display = 'flex';
+            getTvAudioCtx();
             audioDrumroll.play().then(() => { audioDrumroll.pause(); audioDrumroll.currentTime = 0; }).catch(() => {});
         };
 
@@ -216,9 +234,10 @@
         EQUIPOS.forEach((eq) => {
             const carril = document.createElement('div');
             carril.className = 'carril'; carril.style.top = eq.posicionY; 
-            carril.innerHTML = `<div class="personaje" id="p-${eq.id}" style="left: ${eq.inicioX}vw;"><img src="${eq.asset}" alt="${eq.nombre}" style="transform: scale(${eq.escala}); transform-origin: bottom center;"></div>`;
+            carril.innerHTML = `<div class="personaje" id="p-${eq.id}"><img src="${eq.asset}" alt="${eq.nombre}" style="transform: scale(${eq.escala}); transform-origin: bottom center;"></div>`;
             zonaCarriles.appendChild(carril);
-            anteriorClicks[eq.id] = 0; posiciones[eq.id] = 0; 
+            anteriorClicks[eq.id] = 0; posiciones[eq.id] = 0; visualPos[eq.id] = 0;
+            aplicarPosicionVisual(eq.id, 0);
         });
 
         onValue(ref(db, 'equipos'), (snap) => { 
@@ -301,11 +320,11 @@
                     const el = document.getElementById(`p-${eq.id}`);
                     if(el) { 
                         el.classList.remove('meta-cruzada');
-                        el.style.left = eq.inicioX + "vw"; 
                         el.style.filter = "drop-shadow(0 0 12px rgba(255, 209, 102, 0.45))";
                         el.style.zIndex = "10";
                     }
-                    anteriorClicks[eq.id] = 0; posiciones[eq.id] = 0;
+                    anteriorClicks[eq.id] = 0; posiciones[eq.id] = 0; visualPos[eq.id] = 0;
+                    aplicarPosicionVisual(eq.id, 0);
                 });
                 
                 document.getElementById('contador-tv').style.display = 'none';
@@ -324,8 +343,18 @@
                 });
 
                 let num = 3; tv.innerText = num;
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const beep = (f) => { const o=ctx.createOscillator(); const g=ctx.createGain(); o.type='square'; o.frequency.value=f; g.gain.setValueAtTime(volGlobal*0.5, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime+0.1); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+0.1); };
+                const beep = (f) => {
+                    try {
+                        const ctx = getTvAudioCtx();
+                        if (!ctx) return;
+                        const o = ctx.createOscillator(); const g = ctx.createGain();
+                        o.type = 'square'; o.frequency.value = f;
+                        g.gain.setValueAtTime(volGlobal * 0.5, ctx.currentTime);
+                        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                        o.connect(g); g.connect(ctx.destination);
+                        o.start(); o.stop(ctx.currentTime + 0.1);
+                    } catch (_) {}
+                };
                 beep(440);
                 
                 const int = setInterval(() => {
@@ -408,13 +437,10 @@
                 if (nuevosClicks > 0) { posiciones[id] += (nuevosClicks / divisor) * 5; }
                 anteriorClicks[id] = clicksActuales; 
 
-                const progreso = Math.min(posiciones[id] / 1000, 1);
-                const visualLeft = eq.inicioX + (progreso * (LIMITE_META - eq.inicioX));
-
                 const el = document.getElementById(`p-${id}`);
-                if(el) el.style.left = visualLeft + "vw";
 
                 if (posiciones[id] >= 1000) {
+                    posiciones[id] = 1000;
                     clasificacion.push(id);
                     tiemposFinales[id] = ((Date.now() - tiempoInicio) / 1000).toFixed(2);
                     set(ref(db, 'clasificacion'), clasificacion); 
@@ -434,6 +460,29 @@
                 }
             });
         }, 100);
+
+        let lastFrameTime = performance.now();
+        function animarCarriles(now) {
+            const dt = Math.min((now - lastFrameTime) / 1000, 0.05);
+            lastFrameTime = now;
+            if (juegoActivo || clasificacion.length > 0) {
+                const factor = Math.min(1, dt * 10);
+                EQUIPOS.forEach((eq) => {
+                    const id = eq.id;
+                    const target = Math.min(posiciones[id] || 0, 1000);
+                    const diff = target - (visualPos[id] || 0);
+                    if (Math.abs(diff) > 0.2) {
+                        visualPos[id] += diff * factor;
+                        aplicarPosicionVisual(id, visualPos[id]);
+                    } else if (diff !== 0) {
+                        visualPos[id] = target;
+                        aplicarPosicionVisual(id, visualPos[id]);
+                    }
+                });
+            }
+            requestAnimationFrame(animarCarriles);
+        }
+        requestAnimationFrame(animarCarriles);
 
         function animacionFinalPodio() {
             set(ref(db, 'estado'), 'podio');
