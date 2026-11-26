@@ -153,10 +153,10 @@
         const db = getDatabase(app);
         
         const EQUIPOS = [
-            { id: 1, nombre: "FORZUDO", asset: "forzudo.png", posicionY: "66%", inicioX: 12, finX: 85, escala: 1.0 },
-            { id: 2, nombre: "MAGO", asset: "mago.png", posicionY: "73%", inicioX: 12, finX: 85, escala: 1.0 },
-            { id: 3, nombre: "PAYASO", asset: "payaso.png", posicionY: "81%", inicioX: 12, finX: 85, escala: 1.0 },
-            { id: 4, nombre: "SR. CORALES", asset: "corales.png", posicionY: "89%", inicioX: 12, finX: 85, escala: 1.0 }
+            { id: 1, nombre: "FORZUDO", asset: "forzudo.png", posicionY: "60%", inicioX: 12, finX: 85, escala: 1.0 },
+            { id: 2, nombre: "MAGO", asset: "mago.png", posicionY: "67%", inicioX: 12, finX: 85, escala: 1.0 },
+            { id: 3, nombre: "PAYASO", asset: "payaso.png", posicionY: "76%", inicioX: 12, finX: 85, escala: 1.2 },
+            { id: 4, nombre: "SR. CORALES", asset: "corales.png", posicionY: "86%", inicioX: 12, finX: 85, escala: 1.0 }
         ];
         const COLORES_ESTETICOS = ['#FAF5EE', '#FFD166', '#D4AF37', '#C8102E']; 
 
@@ -319,12 +319,15 @@
                 });
 
                 let num = 3; tv.innerText = num;
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const beep = (f) => { const o=ctx.createOscillator(); const g=ctx.createGain(); o.type='square'; o.frequency.value=f; g.gain.setValueAtTime(volGlobal*0.5, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime+0.1); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+0.1); };
+                beep(440);
                 
                 const int = setInterval(() => {
                     num--; 
-                    if(num > 0) { tv.innerText = num; } 
+                    if(num > 0) { tv.innerText = num; beep(440); } 
                     else { 
-                        clearInterval(int); tv.innerText = "GO!";
+                        clearInterval(int); tv.innerText = "GO!"; beep(880);
                         setTimeout(() => { tv.style.display = 'none'; set(ref(db, 'estado'), 'carrera'); }, 500); 
                     }
                 }, 1000);

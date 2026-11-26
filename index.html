@@ -8,7 +8,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         :root { --crimson: #8B0016; --crimson-bright: #C8102E; --dark-bg: #0A0608; --oro: #FFD166; --gold: #D4AF37; }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Arial Black', sans-serif; color: #FAF5EE; overflow: hidden; touch-action: manipulation; background: var(--dark-bg); overscroll-behavior: none; user-select: none; -webkit-user-select: none; }
-        .con-fondo { background: url('fondo.png') center center / cover no-repeat; background-color: var(--dark-bg); image-rendering: pixelated; }
+        .con-fondo { background: url('fondo.png') center center / cover no-repeat; background-color: var(--dark-bg); }
         
         .panel-glass { background: rgba(16, 6, 9, 0.92); backdrop-filter: blur(10px); border: 2px solid var(--gold); box-shadow: 0 0 25px rgba(139, 0, 22, 0.75); border-radius: 15px; padding: 25px 15px; width: 90%; max-width: 320px; text-align: center; margin: 0 auto; transition: all 0.3s ease;}
         
@@ -127,6 +127,9 @@
         const contadorGigante = document.getElementById('contador-gigante-movil');
         const pantallaLlegada = document.getElementById('pantalla-llegada');
         
+        const VOLUMEN_MAX = 0.7;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
         document.addEventListener('touchmove', function (event) { if (event.scale !== 1) { event.preventDefault(); } }, { passive: false });
         let lastTouchEnd = 0;
         document.addEventListener('touchend', function (event) {
@@ -134,6 +137,22 @@
             if (now - lastTouchEnd <= 300) { event.preventDefault(); }
             lastTouchEnd = now;
         }, false);
+
+        function reproducirPop() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(VOLUMEN_MAX, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function reproducirBeep(frecuencia) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = 'square'; osc.frequency.setValueAtTime(frecuencia, audioCtx.currentTime); 
+            gain.gain.setValueAtTime(VOLUMEN_MAX * 0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
 
         onValue(ref(db, 'salaActiva'), (snap) => { pinActivo = snap.val(); });
 
@@ -150,6 +169,7 @@
             miPila = miNombre.split(' ')[0]; 
             
             document.getElementById('pantalla-nombre').classList.remove('activa');
+            if(audioCtx.state === 'suspended') audioCtx.resume();
             asignarEquipoAleatorio();
         };
 
@@ -240,13 +260,16 @@
                 overlayContador.style.display = 'flex'; 
                 contadorGigante.style.fontSize = "150px";
                 let num = 3; contadorGigante.innerText = num;
+                reproducirBeep(440);
                 cuentaAtrasInterval = setInterval(() => {
                     num--; 
                     if(num > 0) {
                         contadorGigante.innerText = num;
+                        reproducirBeep(440);
                     } else { 
                         contadorGigante.style.fontSize = "80px"; 
                         contadorGigante.innerText = "GO!"; 
+                        reproducirBeep(880);
                         clearInterval(cuentaAtrasInterval); 
                     }
                 }, 1000);
@@ -320,6 +343,7 @@
                 msj.className = "texto-negro-inverso";
                 
                 if(navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200, 100, 1000, 500, 2000, 500, 2000]);
+                reproducirBeep(1000); setTimeout(()=>reproducirBeep(1200), 200); setTimeout(()=>reproducirBeep(1500), 400);
             }
         });
 
@@ -330,6 +354,7 @@
             e.preventDefault(); 
             if(estadoActual !== 'carrera' || yaCruzoMeta) return; 
 
+            reproducirPop(); 
             if (navigator.vibrate) navigator.vibrate(15); 
             
             const num = document.createElement('div'); 
